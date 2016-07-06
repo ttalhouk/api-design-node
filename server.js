@@ -25,3 +25,6 @@ function callback(){
   console.log('listening on http://localhost: ' + port +'...');
 };
 app.listen(port, callback);
+
+// notes nodemon similar to shotgun for sinatra
+// nodemon server.js file to start then it will restart when the file is saved.
