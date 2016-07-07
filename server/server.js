@@ -14,13 +14,22 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
 var _ = require('lodash');
-var morgan = require('morgan');
+var morgan = require('morgan'); // logs in the server
 
 var lions = [];
 var id = 0;
-
+// middleware executes on every router call and when next() goes to the next
+// middleware function.  See updateId function...
+// middleware functions have the following args
+// function(err, req, res, next)
+// or function(req, res, next)
+// or function(req, res)
+// can pass middleware into routes between routs and callback
 var updateId = function(req, res, next) {
   // fill this out. this is the route middleware for the ids
+  id += 1;
+  req.body.id = id + '';
+  next();
 };
 
 
@@ -36,6 +45,14 @@ app.use(bodyParser.json());
 app.param('id', function(req, res, next, id) {
   // fill this out to find the lion based off the id
   // and attach it to req.lion. Rember to call next()
+  var lion = _.find(lions, {id: id});
+
+  if (lion){
+    req.lion();
+    next();
+  } else {
+    res.send();
+  }
 });
 
 // TODO: make the REST routes to perform CRUD on lions
@@ -46,7 +63,7 @@ app.get('/lions', function(req, res){
 
 app.get('/lions/:id', function(req, res){
   // use req.lion
-  res.json(lion || {});
+  res.json( req.lion || {} );
 });
 
 app.post('/lions', updateId, function(req, res) {
@@ -55,12 +72,6 @@ app.post('/lions', updateId, function(req, res) {
   res.send(lion);
 });
 
-// get the parameters from the route
-app.get('/lions/:id', function(req, res) {
-  var lion = _.find(lions, {id: req.params.id});
-
-  res.json(lion || {});
-});
 
 app.put('/lions/:id', function(req, res) {
   var update = req.body;
@@ -85,6 +96,11 @@ app.delete('/lions/:id',function(req, res) {
     lions.splice(lion, 1);
     res.json(deletedLion)
   }
+});
+// error handler
+app.use(function(err, req, res, next) {
+  console.log(err);
+  res.status(500).send(err);
 });
 
 
